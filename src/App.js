@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './App.css'; // Import the CSS file
 
 function App() {
   const [step, setStep] = useState(0);
@@ -17,8 +18,8 @@ function App() {
     const newAnswers = [...answers, answer];
     setAnswers(newAnswers);
 
-    if (step < 4) {
-      const response = await fetch('/quiz', {
+    if (step < 5) {  // Ensure it matches the step count in Flask
+      const response = await fetch('http://127.0.0.1:5000/quiz', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,11 +28,15 @@ function App() {
       });
 
       const data = await response.json();
-      setQuestion(data.question);
-      setChoices(data.choices);
-      setStep(step + 1);
+      if (data.result) {
+        setResult(data.result);
+      } else {
+        setQuestion(data.question);
+        setChoices(data.choices);
+        setStep(step + 1);
+      }
     } else {
-      const response = await fetch('/result', {
+      const response = await fetch('http://127.0.0.1:5000/result', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,17 +50,19 @@ function App() {
   };
 
   return (
-    <div>
+    <div className="quiz-container">
       {result ? (
         <h2>{result}</h2>
       ) : (
         <div>
           <h2>{question}</h2>
-          {choices.map((choice, index) => (
-            <button key={index} onClick={() => handleAnswer(index + 1)}>
-              {choice}
-            </button>
-          ))}
+          <div className="choices-container">
+            {choices.map((choice, index) => (
+              <button key={index} onClick={() => handleAnswer(index + 1)} className="quiz-button">
+                {choice}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
